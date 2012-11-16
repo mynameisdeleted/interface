@@ -631,21 +631,89 @@ void display(void)
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
 
+        glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
+        glPointSize( 10.0f );
+            
+            
+    
+        glBegin(GL_QUADS);
+        glColor3f(1.0f,1.0f,1.0f);
+    
+        glVertex3f(0.0f, 10.3f,-3.0f);
+        glVertex3f(0.0f,10.0f,-3.0f);
+        glVertex3f(0.0f,10.0f,0.0f);
+        glVertex3f(0.0f,10.3f,0.0f);
+        glEnd();
+        
+        drawtext(80,70,0.09,0,1.0,0,(char*)"File   Delay",1,0,0);
         //drawvec3(100, 100, 0.15, 0, 1.0, 0, myHead.getPos(), 0, 1, 0);
     
         if (mouse_pressed == 1)
         {
-            glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
-            glPointSize( 10.0f );
-            glColor3f(1,1,1);
-            //glEnable(GL_POINT_SMOOTH);
-            glBegin(GL_POINTS);
-            glVertex2f(target_x, target_y);
-            glEnd();
-            char val[20];
-            sprintf(val, "%d,%d", target_x, target_y); 
-            drawtext(target_x, target_y-20, 0.08, 0, 1.0, 0, val, 0, 1, 0);
+        	
+            if( 80 <target_x && target_x < 110 && 60 < target_y && target_y < 70 )
+                menu_num=1;
+            if( 110 <target_x && target_x < 190 && 60 < target_y && target_y < 70 )
+                menu_num=2;
+            
+            if (menu_num== 1){
+                if( 80 <target_x && target_x < 110 && 70 < target_y && target_y < 85)
+                    drawtext(80,85,0.09,0,1.0,0,(char*)"Quit",0,1,1);
+                else
+                    drawtext(80,85,0.09,0,1.0,0,(char*)"Quit",1,1,1);
+            }
+            
+            if (menu_num== 2){
+                if( 110 <target_x && target_x < 190 && 70 < target_y && target_y < 85)
+                    drawtext(110,85,0.09,0,1.0,0,(char*)"None",1,1,0);
+                else
+                    drawtext(110,85,0.09,0,1.0,0,(char*)"None",1,1,1);
+                if( 110 <target_x && target_x < 190 && 85 < target_y && target_y < 100)
+                    drawtext(110,100,0.09,0,1.0,0,(char*)"50 msecs",1,1,0);
+                else
+                    drawtext(110,100,0.09,0,1.0,0,(char*)"50 msecs",1,1,1);
+                
+                if( 110 <target_x && target_x < 190 && 100 < target_y && target_y < 115)
+                    drawtext(110,115,0.09,0,1.0,0,(char*)"100 msecs",1,1,0);
+                else
+                    drawtext(110,115,0.09,0,1.0,0,(char*)"100 msecs",1,1,1);
+                if( 110 <target_x && target_x < 190 && 115 < target_y && target_y < 130)
+                    drawtext(110,130,0.09,0,1.0,0,(char*)"200 msecs",1,1,0);
+                else
+                    drawtext(110,130,0.09,0,1.0,0,(char*)"200 msecs",1,1,1);
+            
+            }
+            if(target_x>200){
+
+              //glEnable(GL_POINT_SMOOTH);
+              glBegin(GL_POINTS);
+              glVertex2f(target_x, target_y);
+              glEnd();
+              char val[20];
+              sprintf(val, "%d,%d", target_x, target_y); 
+              drawtext(target_x, target_y-20, 0.08, 0, 1.0, 0, val, 0, 1, 0);
+            }
+        }else{
+            if(menu_num == 1)
+                if( 80 <target_x && target_x < 110 && 70 < target_y && target_y < 85)
+                    exit(0);
+            
+            if(menu_num == 2)
+            {
+                if( 220 <target_x && target_x < 290 && 70 < target_y && target_y < 85)
+                    delay=0.0;
+                if( 220 <target_x && target_x < 290 && 85 < target_y && target_y < 100)
+                    delay=50.0;
+                if( 220 <target_x && target_x < 290 && 100 < target_y && target_y < 115)
+                    delay=100.0;
+                if( 220 <target_x && target_x < 290 && 115 < target_y && target_y < 130)
+                    delay=200.0;
+            }
+            menu_num=0;
+
         }
+        
+        
         if (display_head_mouse)
         {
             glPointSize(10.0f);
