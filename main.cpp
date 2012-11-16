@@ -35,7 +35,7 @@
 #include <termios.h>
 #include "tga.h"                //  Texture loader library
 #include "glm/glm.hpp"
-#include <portaudio.h>
+//#include <portaudio.h>
 
 #include "SerialInterface.h"
 #include "field.h"
@@ -48,14 +48,14 @@
 #include "particle.h"
 
 #include "texture.h"
-
+#include "menu.h"
 //TGAImg Img;
-
+int menu_num=0;
 using namespace std;
 
 //   Junk for talking to the Serial Port 
 int serial_on = 0;                  //  Is serial connection on/off?  System will try
-
+menu menu_items;
 //  Network Socket Stuff 
 //  For testing, add milliseconds of delay for received UDP packets
 int UDP_socket;
@@ -229,8 +229,8 @@ void display_stats(void)
     char stats[200];
     sprintf(stats, "FPS = %3.0f, Ping = %4.1f Packets/Sec = %d, Bytes/sec = %d", 
             FPS, ping_msecs, packets_per_second,  bytes_per_second);
-    drawtext(10, 30, 0.10, 0, 1.0, 0, stats); 
-    
+    drawtext(10, 30, 0.10, 0, 1.0, 0, stats);
+
     /*
     char adc[200];
 	sprintf(adc, "pitch_rate = %i, yaw_rate = %i, accel_lat = %i, accel_fwd = %i, loc[0] = %3.1f loc[1] = %3.1f, loc[2] = %3.1f", 
@@ -558,7 +558,7 @@ void display(void)
     glPushMatrix();
         glLoadIdentity();
         glEnable(GL_COLOR_MATERIAL);
-        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+            glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
         
         GLfloat light_position0[] = { 1.0, 1.0, 0.0, 0.0 };
         glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
@@ -571,21 +571,60 @@ void display(void)
         
         glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
         glMateriali(GL_FRONT, GL_SHININESS, 96);
-           
+    
+    
+    
+    
         //  Rotate, translate to camera location 
         glRotatef(render_pitch, 1, 0, 0);
         glRotatef(render_yaw, 0, 1, 0);
         glTranslatef(location[0], location[1], location[2]);
     
         /* Draw Point Sprites */
-        
-        //glActiveTexture(GL_TEXTURE0);
-        glEnable( GL_TEXTURE_2D );
-         
-        //glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, particle_attenuation_quadratic );
     
+    
+    
+    //glActiveTexture(GL_TEXTURE0);
+    glEnable( GL_TEXTURE_2D );
+    
+    //glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, particle_attenuation_quadratic );
+    
+
+    glPushMatrix();
+    //glLoadIdentity();
+   //glOrtho(<#GLdouble left#>, <#GLdouble right#>, <#GLdouble bottom#>, <#GLdouble top#>, <#GLdouble zNear#>, <#GLdouble zFar#>)
+    //glOrtho(0.0f,WIDTH,0.0f,HEIGHT,-1,1);
+   // glEnable(GL_LIGHTING);
+    
+    
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, WIDTH, HEIGHT, 0);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    
+    glColor3f(1.0f,1.0f,0.0f);
+    //glBegin(GL_LINES);
+    //glEnd();
+
+    
+    glDisable(GL_LIGHTING);
+   // drawtext(0, 0, 0.10, 0, 1.0, 1, (char*)"File    Frame-Rate",1.0f,0.0f,1.0f);
+    glPopMatrix();
+
+    //drawtext(298,40,0.10f,0.0f,0.1f,0,(char*)"aaaaa",1.0f,0.0f,1.0f);
+   // glutStrokeString(GLUT_STROKE_ROMAN, "haha");
+    //glutStrokeLength(GLUT_STROKE_ROMAN, (const unsigned char *)"hahaha");
+  //  glutStrok
+    glColor3f(1.0f,1.0f,1.0f);
+        
+    glPopMatrix();
+    
+    
+    glEnable(GL_LIGHTING);
+
         float maxSize = 0.0f;
         glGetFloatv( GL_POINT_SIZE_MAX_ARB, &maxSize );
         glPointSize( maxSize );
@@ -630,11 +669,21 @@ void display(void)
         gluOrtho2D(0, WIDTH, HEIGHT, 0);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
-
+        
         //drawvec3(100, 100, 0.15, 0, 1.0, 0, myHead.getPos(), 0, 1, 0);
     
+    
+        glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
+        glPointSize( 10.0f );
+        glColor3f(1,1,1);
+    
+    
+       
+        //drawtext(80,70,0.09,0,1.0,0,(char*)"File   Delay",1,0,0);
+    menu_items.draw(mouse_x, mouse_y, mouse_pressed);
         if (mouse_pressed == 1)
         {
+            if(mouse_x>200){
             glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
             glPointSize( 10.0f );
             glColor3f(1,1,1);
@@ -645,6 +694,7 @@ void display(void)
             char val[20];
             sprintf(val, "%d,%d", target_x, target_y); 
             drawtext(target_x, target_y-20, 0.08, 0, 1.0, 0, val, 0, 1, 0);
+            }
         }
         if (display_head_mouse)
         {
@@ -831,6 +881,7 @@ void mouseFunc( int button, int state, int x, int y )
 		mouse_x = x;
 		mouse_y = y;
 		mouse_pressed = 1;
+        printf("mdown\n");
     }
 	if( button == GLUT_LEFT_BUTTON && state == GLUT_UP )
     {
@@ -855,8 +906,39 @@ void motionFunc( int x, int y)
 	
 }
 
+//these are functions called by the menus
+void quit(){
+    exit(0);
+}
+void delay_none(){
+    delay=0;
+}
+void delay_50(){
+    delay=50;
+}
+void delay_100(){
+    delay=100;
+}
+void delay_200(){
+    delay=200;
+}
+
+
 int main(int argc, char** argv)
 {
+    
+    //initialize menu items
+    menu_items.init(80, 70);
+    menu_items.add_top_item((char*)"FILE");
+    menu_items.add_top_item((char*)"DELAY");
+    menu_items.add_menu_item(0, (char*)"QUIT", quit);
+    menu_items.add_menu_item(1, (char*)"None", delay_none);
+    menu_items.add_menu_item(1, (char*)"50 msecs", delay_50);
+    menu_items.add_menu_item(1, (char*)"50 msecs", delay_50);
+    menu_items.add_menu_item(1, (char*)"100msecs", delay_100);
+    menu_items.add_menu_item(1, (char*)"200msecs", delay_200);
+
+    
     //  Create network socket and buffer
     UDP_socket = network_init(); 
     if (UDP_socket) printf( "Created UDP socket.\n" ); 
