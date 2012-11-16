@@ -636,15 +636,16 @@ void display(void)
             
             
     
-        glBegin(GL_QUADS);
-        glColor3f(1.0f,1.0f,1.0f);
+    glBegin(GL_QUADS);
+    glColor3f(1.0f,1.0f,1.0f);
     
-        glVertex3f(0.0f, 10.3f,-3.0f);
-        glVertex3f(0.0f,10.0f,-3.0f);
-        glVertex3f(0.0f,10.0f,0.0f);
-        glVertex3f(0.0f,10.3f,0.0f);
-        glEnd();
-        
+    glVertex2i(0,60);
+    glVertex2i(0,72);
+    glVertex2i(200,72);
+    glVertex2i(200,60);
+    
+    glEnd();
+
         drawtext(80,70,0.09,0,1.0,0,(char*)"File   Delay",1,0,0);
         //drawvec3(100, 100, 0.15, 0, 1.0, 0, myHead.getPos(), 0, 1, 0);
     
