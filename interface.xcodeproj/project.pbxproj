@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		35D0AB46165690B000F42250 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35D0AB44165690B000F42250 /* menu.cpp */; };
 		8DD76F650486A84900D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
 		B6BDADD415F4085B002A07DF /* audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6BDADD315F4085B002A07DF /* audio.cpp */; };
 		B6BDADD615F40B04002A07DF /* libportaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B6BDADD515F40B04002A07DF /* libportaudio.a */; };
@@ -55,6 +56,8 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		35D0AB44165690B000F42250 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menu.cpp; sourceTree = "<group>"; };
+		35D0AB45165690B000F42250 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
 		8DD76F6C0486A84900D96B5E /* interface */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = interface; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6BDADD115F4084F002A07DF /* audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.h; sourceTree = "<group>"; };
 		B6BDADD315F4085B002A07DF /* audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = audio.cpp; sourceTree = "<group>"; };
@@ -115,6 +118,8 @@
 		08FB7794FE84155DC02AAC07 /* test_c_plus */ = {
 			isa = PBXGroup;
 			children = (
+				35D0AB44165690B000F42250 /* menu.cpp */,
+				35D0AB45165690B000F42250 /* menu.h */,
 				F6813566164879B5003040E3 /* Resources */,
 				B6BDADDE15F444DB002A07DF /* CoreServices.framework */,
 				B6BDADDC15F444D3002A07DF /* AudioUnit.framework */,
@@ -261,6 +266,7 @@
 				D4EFE3D0162A2DA000DC5C59 /* hand.cpp in Sources */,
 				F68135561648617D003040E3 /* texture.cpp in Sources */,
 				F681358B1648896D003040E3 /* lodepng.cpp in Sources */,
+				35D0AB46165690B000F42250 /* menu.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
