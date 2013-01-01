@@ -33,10 +33,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-#include "tga.h"                //  Texture loader library
 #include "glm/glm.hpp"
 //#include <portaudio.h>
-
+#include "menu.h"
 #include "SerialInterface.h"
 #include "field.h"
 #include "world.h"
@@ -48,15 +47,19 @@
 #include "particle.h"
 
 #include "texture.h"
-#include "menu.h"
-//TGAImg Img;
-int menu_num=0;
+
+#include "cloud.h"
+
+
+
 using namespace std;
 
 //   Junk for talking to the Serial Port 
 int serial_on = 0;                  //  Is serial connection on/off?  System will try
-menu menu_items;
-//  Network Socket Stuff 
+int audio_on = 0;                   //  Whether to turn on the audio support 
+int simulate_on = 1; 
+
+//  Network Socket Stuff
 //  For testing, add milliseconds of delay for received UDP packets
 int UDP_socket;
 int delay = 0;         
@@ -73,56 +76,33 @@ int bytescount = 0;
 int target_x, target_y; 
 int target_display = 0;
 
-unsigned char last_key = 0; 
-
-double ping = 0; 
+int head_mirror = 0;                     //  Whether to mirror the head when viewing it
 
 int WIDTH = 1200; 
 int HEIGHT = 800; 
-
-#define BOTTOM_MARGIN 0				
-#define RIGHT_MARGIN 0
-
+menu menu_items;
 #define HAND_RADIUS 0.25             //  Radius of in-world 'hand' of you
 Head myHead;                        //  The rendered head of oneself or others 
 Hand myHand(HAND_RADIUS, 
             glm::vec3(0,1,1));      //  My hand (used to manipulate things in world)
 
 glm::vec3 box(WORLD_SIZE,WORLD_SIZE,WORLD_SIZE);
-ParticleSystem balls(10, 
+ParticleSystem balls(0, 
                      box, 
-                     false,                     // Wrap?
-                     0.0,                       // Noise
-                     0.3,                        //  Size scale 
-                     0.0                       // Gravity 
+                     false,                     //  Wrap?
+                     0.02,                      //  Noise
+                     0.3,                       //  Size scale 
+                     0.0                        //  Gravity 
                      );
 
+Cloud cloud(300000,                             //  Particles
+            box,                                //  Bounding Box
+            false                               //  Wrap
+            );
 
-
-//  FIELD INFORMATION 
-//  If the simulation 'world' is a box with 10M boundaries, the offset to a field cell is given by:
-//  element = [x/10 + (y/10)*10 + (z*/10)*100] 
-//
-//  The vec(x,y,z) corner of a field cell at element i is:
-// 
-//  z = (int)( i / 100)
-//  y = (int)(i % 100 / 10)
-//  x = (int)(i % 10)
 
 #define RENDER_FRAME_MSECS 10
 #define SLEEP 0
-
-#define NUM_TRIS 200000  
-struct {
-    float vertices[NUM_TRIS * 3];
-//    float normals [NUM_TRIS * 3];
-//    float colors  [NUM_TRIS * 3];
-    float vel     [NUM_TRIS * 3];
-    glm::vec3 vel1[NUM_TRIS];
-    glm::vec3 vel2[NUM_TRIS];
-    int element[NUM_TRIS];
-}tris;
-
 
 float yaw =0.f;                         //  The yaw, pitch for the avatar head 
 float pitch = 0.f;                      //      
@@ -153,13 +133,13 @@ int display_head = 0;
 int display_hand = 0;
 int display_field = 0;
 
-int display_head_mouse = 1;              //  Display sample mouse pointer controlled by head movement
-int head_mouse_x, head_mouse_y;     
+int display_head_mouse = 1;         //  Display sample mouse pointer controlled by head movement
+int head_mouse_x, head_mouse_y; 
+int head_lean_x, head_lean_y;
 
 int mouse_x, mouse_y;				//  Where is the mouse 
 int mouse_pressed = 0;				//  true if mouse has been pressed (clear when finished)
 
-int accel_x, accel_y;
 
 int speed;
 
@@ -194,7 +174,7 @@ double elapsedTime;
 // 1. Add to the XCode project in the Resources/images group
 //    (ensure "Copy file" is checked
 // 2. Add to the "Copy files" build phase in the project
-char texture_filename[] = "int-texture256-v4.png";
+char texture_filename[] = "./int-texture256-v4.png";
 unsigned int texture_width = 256;
 unsigned int texture_height = 256;
 
@@ -229,8 +209,8 @@ void display_stats(void)
     char stats[200];
     sprintf(stats, "FPS = %3.0f, Ping = %4.1f Packets/Sec = %d, Bytes/sec = %d", 
             FPS, ping_msecs, packets_per_second,  bytes_per_second);
-    drawtext(10, 30, 0.10, 0, 1.0, 0, stats);
-
+    drawtext(10, 30, 0.10, 0, 1.0, 0, stats); 
+    
     /*
     char adc[200];
 	sprintf(adc, "pitch_rate = %i, yaw_rate = %i, accel_lat = %i, accel_fwd = %i, loc[0] = %3.1f loc[1] = %3.1f, loc[2] = %3.1f", 
@@ -259,10 +239,12 @@ void initDisplay(void)
 
 void init(void)
 {
-    int i, j; 
+    int i; 
 
-    Audio::init();
-    printf( "Audio started.\n" );
+    if (audio_on) {
+        Audio::init();
+        printf( "Audio started.\n" );
+    }
 
     //  Clear serial channels 
     for (i = i; i < NUM_CHANNELS; i++)
@@ -273,6 +255,8 @@ void init(void)
 
     head_mouse_x = WIDTH/2;
     head_mouse_y = HEIGHT/2; 
+    head_lean_x = WIDTH/2;
+    head_lean_y = HEIGHT/2;
     
     //  Initialize Field values 
     field_init();
@@ -284,43 +268,8 @@ void init(void)
         myHead.setNoise(noise);
     }
     
-    //  Init particles
-    float tri_scale, r;
-    const float VEL_SCALE = 0.00;
-    for (i = 0; i < NUM_TRIS; i++)
-    {
-        r = randFloat();
-        if (r > .999) tri_scale = 0.7; 
-        else if (r > 0.90) tri_scale = 0.1;
-        else tri_scale = 0.05; 
-        
+    //load_png_as_texture(texture_filename);
 
-        glm::vec3 pos (randFloat() * WORLD_SIZE,
-                       randFloat() * WORLD_SIZE,
-                       randFloat() * WORLD_SIZE);
-        glm::vec3 verts[3];
-        verts[j].x = pos.x + randFloat() * tri_scale - tri_scale/2.f;
-        verts[j].y = pos.y + randFloat() * tri_scale - tri_scale/2.f;
-        verts[j].z = pos.z + randFloat() * tri_scale - tri_scale/2.f;
-        tris.vertices[i*3] = verts[j].x;
-        tris.vertices[i*3 + 1] = verts[j].y;
-        tris.vertices[i*3 + 2] = verts[j].z;
-        
-        // reuse pos for the normal
-        //glm::normalize((pos += glm::cross(verts[1] - verts[0], verts[2] - verts[0])));
-        //tris.normals[i*3] = pos.x;
-        //tris.normals[i*3+1] = pos.y;
-        //tris.normals[i*3+2] = pos.z;
-        
-        //  Moving - white
-        tris.element[i] = 1;
-        //tris.colors[i*3] = 1.0;  tris.colors[i*3+1] = 1.0; tris.colors[i*3+2] = 1.0;
-        tris.vel[i*3] = (randFloat() - 0.5)*VEL_SCALE;
-        tris.vel[i*3+1] = (randFloat() - 0.5)*VEL_SCALE;
-        tris.vel[i*3+2] = (randFloat() - 0.5)*VEL_SCALE;
-        
-    }
-    
     if (serial_on)
     {
         //  Call readsensors for a while to get stable initial values on sensors    
@@ -346,7 +295,9 @@ void terminate () {
     // Close serial port
     //close(serial_fd);
 
-    Audio::terminate();
+    if (audio_on) { 
+        Audio::terminate();
+    }
     exit(EXIT_SUCCESS);
 }
 
@@ -354,57 +305,6 @@ const float SCALE_SENSORS = 0.3f;
 const float SCALE_X = 2.f;
 const float SCALE_Y = 1.f;
 
-
-void update_tris()
-{
-    int i, j;
-    float field_val[3];
-    float field_contrib[3];
-    for (i = 0; i < NUM_TRIS; i++)
-    {
-        if (tris.element[i] == 1)          //  If moving object, move and drag
-        {
-            // Update position
-            tris.vertices[i*3+0] += tris.vel[i*3];
-            tris.vertices[i*3+1] += tris.vel[i*3+1];
-            tris.vertices[i*3+2] += tris.vel[i*3+2];
-            
-            // Add a little gravity 
-            //tris.vel[i*3+1] -= 0.0001;
-           
-            const float DRAG = 0.99;
-            // Drag:  Decay velocity
-            tris.vel[i*3] *= DRAG;
-            tris.vel[i*3+1] *= DRAG;
-            tris.vel[i*3+2] *= DRAG;
-        }
-                 
-        if (tris.element[i] == 1) 
-        {
-            // Read and add velocity from field 
-            field_value(field_val, &tris.vertices[i*3]);
-            tris.vel[i*3] += field_val[0];
-            tris.vel[i*3+1] += field_val[1];
-            tris.vel[i*3+2] += field_val[2];
-            
-            // Add a tiny bit of energy back to the field
-            const float FIELD_COUPLE = 0.0000001;
-            field_contrib[0] = tris.vel[i*3]*FIELD_COUPLE;
-            field_contrib[1] = tris.vel[i*3+1]*FIELD_COUPLE;
-            field_contrib[2] = tris.vel[i*3+2]*FIELD_COUPLE;
-            field_add(field_contrib, &tris.vertices[i*3]);
-        }
-
-        // bounce at edge of world 
-        for (j=0; j < 3; j++) {
-            if ((tris.vertices[i*3+j] > WORLD_SIZE) || (tris.vertices[i*3+j] < 0.0)) {
-                tris.vertices[i*3+j] = min(WORLD_SIZE, tris.vertices[i*3+j]);
-                tris.vertices[i*3+j] = max(0.f, tris.vertices[i*3+j]);
-                tris.vel[i*3 + j]*= -1.0;
-            }
-        }
-     }
-}
 
 void reset_sensors()
 {
@@ -421,6 +321,9 @@ void reset_sensors()
     fwd_vel = 0.0;
     head_mouse_x = WIDTH/2;
     head_mouse_y = HEIGHT/2; 
+    head_lean_x = WIDTH/2;
+    head_lean_y = HEIGHT/2; 
+    
     myHead.reset();
     myHand.reset();
     if (serial_on) read_sensors(1, &avg_adc_channels[0], &adc_channels[0]);
@@ -431,12 +334,21 @@ void update_pos(float frametime)
 {
     float measured_pitch_rate = adc_channels[0] - avg_adc_channels[0];
     float measured_yaw_rate = adc_channels[1] - avg_adc_channels[1];
-    float measured_lateral_accel = adc_channels[2] - avg_adc_channels[2];
-    float measured_fwd_accel = avg_adc_channels[3] - adc_channels[3];
+    float measured_lateral_accel = adc_channels[3] - avg_adc_channels[3];
+    float measured_fwd_accel = avg_adc_channels[2] - adc_channels[2];
     
     //  Update avatar head position based on measured gyro rates
-    myHead.addYaw(measured_yaw_rate * 1.20 * frametime);
-    myHead.addPitch(measured_pitch_rate * -1.0 * frametime);
+    const float HEAD_ROTATION_SCALE = 0.20;
+    const float HEAD_LEAN_SCALE = 0.02;
+    if (head_mirror) {
+        myHead.addYaw(measured_yaw_rate * HEAD_ROTATION_SCALE * frametime);
+        myHead.addPitch(measured_pitch_rate * -HEAD_ROTATION_SCALE * frametime);
+        myHead.addLean(measured_lateral_accel * frametime * HEAD_LEAN_SCALE, measured_fwd_accel*frametime * HEAD_LEAN_SCALE);
+    } else {
+        myHead.addYaw(measured_yaw_rate * -HEAD_ROTATION_SCALE * frametime);
+        myHead.addPitch(measured_pitch_rate * -HEAD_ROTATION_SCALE * frametime);
+        myHead.addLean(measured_lateral_accel * frametime * -HEAD_LEAN_SCALE, measured_fwd_accel*frametime * HEAD_LEAN_SCALE);        
+    }
     //  Decay avatar head back toward zero
     //pitch *= (1.f - 5.0*frametime); 
     //yaw *= (1.f - 7.0*frametime);
@@ -456,6 +368,7 @@ void update_pos(float frametime)
     head_mouse_y = min(head_mouse_y, HEIGHT);
     
     //  Update hand/manipulator location for measured forces from serial channel
+    /*
     const float MIN_HAND_ACCEL = 30.0;
     const float HAND_FORCE_SCALE = 0.5;
     glm::vec3 hand_accel(-(avg_adc_channels[6] - adc_channels[6]),
@@ -466,6 +379,7 @@ void update_pos(float frametime)
     {
         myHand.addVel(frametime*hand_accel*HAND_FORCE_SCALE);
     }
+    */
                        
     //  Update render direction (pitch/yaw) based on measured gyro rates
     const int MIN_YAW_RATE = 300;
@@ -548,145 +462,70 @@ void update_pos(float frametime)
 void display(void)
 {
     
-    int i;
-    
+
     glEnable (GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-        glLoadIdentity();
-        glEnable(GL_COLOR_MATERIAL);
-            glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-        
-        GLfloat light_position0[] = { 1.0, 1.0, 0.0, 0.0 };
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
-        GLfloat ambient_color[] = { 0.125, 0.305, 0.5 };  
-        glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color);
-        GLfloat diffuse_color[] = { 0.5, 0.42, 0.33 };
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color);
-        GLfloat specular_color[] = { 1.0, 1.0, 1.0, 1.0};
-        glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color);
-        
-        glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
-        glMateriali(GL_FRONT, GL_SHININESS, 96);
-    
-    
-    
-    
-        //  Rotate, translate to camera location 
-        glRotatef(render_pitch, 1, 0, 0);
-        glRotatef(render_yaw, 0, 1, 0);
-        glTranslatef(location[0], location[1], location[2]);
-    
-        /* Draw Point Sprites */
-    
-    
-    
-    //glActiveTexture(GL_TEXTURE0);
-    glEnable( GL_TEXTURE_2D );
-    
-    //glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, particle_attenuation_quadratic );
-    
-
-    glPushMatrix();
-    //glLoadIdentity();
-   //glOrtho(<#GLdouble left#>, <#GLdouble right#>, <#GLdouble bottom#>, <#GLdouble top#>, <#GLdouble zNear#>, <#GLdouble zFar#>)
-    //glOrtho(0.0f,WIDTH,0.0f,HEIGHT,-1,1);
-   // glEnable(GL_LIGHTING);
-    
-    
-    glPushMatrix();
     glLoadIdentity();
-    gluOrtho2D(0, WIDTH, HEIGHT, 0);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     
-    glColor3f(1.0f,1.0f,0.0f);
-    //glBegin(GL_LINES);
-    //glEnd();
-
+    GLfloat light_position0[] = { 1.0, 1.0, 0.0, 0.0 };
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
+    GLfloat ambient_color[] = { 0.125, 0.305, 0.5 };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color);
+    GLfloat diffuse_color[] = { 0.5, 0.42, 0.33 };
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color);
+    GLfloat specular_color[] = { 1.0, 1.0, 1.0, 1.0};
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color);
     
-    glDisable(GL_LIGHTING);
-   // drawtext(0, 0, 0.10, 0, 1.0, 1, (char*)"File    Frame-Rate",1.0f,0.0f,1.0f);
-    glPopMatrix();
-
-    //drawtext(298,40,0.10f,0.0f,0.1f,0,(char*)"aaaaa",1.0f,0.0f,1.0f);
-   // glutStrokeString(GLUT_STROKE_ROMAN, "haha");
-    //glutStrokeLength(GLUT_STROKE_ROMAN, (const unsigned char *)"hahaha");
-  //  glutStrok
-    glColor3f(1.0f,1.0f,1.0f);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
+    glMateriali(GL_FRONT, GL_SHININESS, 96);
+    
+    //  Rotate, translate to camera location
+    glRotatef(render_pitch, 1, 0, 0);
+    glRotatef(render_yaw, 0, 1, 0);
+    glTranslatef(location[0], location[1], location[2]);
+    /* Draw Point Sprites */
+    
+    load_png_as_texture(texture_filename);
+    
+    glDisable( GL_POINT_SPRITE_ARB );
+    glDisable( GL_TEXTURE_2D );
+    if (!display_head) cloud.render();
+    //  Show field vectors
+    if (display_field) field_render();
+    
+    if (display_head) myHead.render();
         
-    glPopMatrix();
-    
-    
-    glEnable(GL_LIGHTING);
-
-        float maxSize = 0.0f;
-        glGetFloatv( GL_POINT_SIZE_MAX_ARB, &maxSize );
-        glPointSize( maxSize );
-        glPointParameterfARB( GL_POINT_SIZE_MAX_ARB, maxSize );
-        glPointParameterfARB( GL_POINT_SIZE_MIN_ARB, 0.001f );
-        glTexEnvf( GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE );
-         
-        glEnable( GL_POINT_SPRITE_ARB );
-        glBegin( GL_POINTS );
-        {
-            for (i = 0; i < NUM_TRIS; i++)
-            {
-                glVertex3f(tris.vertices[i*3],
-                           tris.vertices[i*3+1],
-                           tris.vertices[i*3+2]);
-            }
-        }
-        glEnd();
-            
-        glDisable( GL_TEXTURE_2D );
-        glDisable( GL_POINT_SPRITE_ARB );
-
-        //  Show field vectors
-        if (display_field) field_render();
-        
-        if (display_head) myHead.render();
-        
-        if (display_hand) myHand.render();   
+    if (display_hand) myHand.render();
      
     
-        // balls.render();
+    if (!display_head) balls.render();
             
-        //  Render the world box 
-        render_world_box();
+    //  Render the world box
+    if (!display_head) render_world_box();
 
     glPopMatrix();
 
     //  Render 2D overlay:  I/O level bar graphs and text  
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-        glLoadIdentity(); 
-        gluOrtho2D(0, WIDTH, HEIGHT, 0);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_LIGHTING);
-        
-        //drawvec3(100, 100, 0.15, 0, 1.0, 0, myHead.getPos(), 0, 1, 0);
+    glLoadIdentity();
+    gluOrtho2D(0, WIDTH, HEIGHT, 0);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
     
-    
-        glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
-        glPointSize( 10.0f );
-        glColor3f(1,1,1);
-    
-    
-       
-        //drawtext(80,70,0.09,0,1.0,0,(char*)"File   Delay",1,0,0);
+    glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic);
     menu_items.draw(mouse_x, mouse_y, mouse_pressed);
-        if (mouse_pressed == 1)
-        {
-            if(mouse_x>200){
-            glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
+    if (mouse_pressed == 1)
+    {
+		if(mouse_x >200){
             glPointSize( 10.0f );
-            glColor3f(1,1,1);
+            glColor3f(1, 1, 1);
             //glEnable(GL_POINT_SMOOTH);
             glBegin(GL_POINTS);
             glVertex2f(target_x, target_y);
@@ -694,48 +533,49 @@ void display(void)
             char val[20];
             sprintf(val, "%d,%d", target_x, target_y); 
             drawtext(target_x, target_y-20, 0.08, 0, 1.0, 0, val, 0, 1, 0);
-            }
-        }
-        if (display_head_mouse)
-        {
-            glPointSize(10.0f);
-            glColor4f(1.0, 1.0, 0.0, 0.8);
-            glEnable(GL_POINT_SMOOTH);
-            glBegin(GL_POINTS);
-            glVertex2f(head_mouse_x, head_mouse_y);
-            glEnd();
-        }
+		}
+    }
+    
+    if (display_head_mouse && !display_head)
+    {
+        glPointSize(10.0f);
+        glColor4f(1.0, 1.0, 0.0, 0.8);
+        glEnable(GL_POINT_SMOOTH);
+        glBegin(GL_POINTS);
+        glVertex2f(head_mouse_x, head_mouse_y);
+        glEnd();
+    }
         
-        //  Show detected levels from the serial I/O ADC channel sensors
-        if (display_levels)
+    //  Show detected levels from the serial I/O ADC channel sensors
+    if (display_levels)
+    {
+        int i;
+        int disp_x = 10;
+        const int GAP = 16;
+        char val[10];
+        for(i = 0; i < NUM_CHANNELS; i++)
         {
-            int i;
-            int disp_x = 10;
-            const int GAP = 16;
-            char val[10];
-            for(i = 0; i < NUM_CHANNELS; i++)
-            {
-                //  Actual value 
-                glColor4f(1, 1, 1, 1);
-                glBegin(GL_LINES);
-                    glVertex2f(disp_x, HEIGHT*0.95);
-                    glVertex2f(disp_x, HEIGHT*(0.25 + 0.75f*adc_channels[i]/4096));
-                glEnd();
-                //  Trailing Average value 
-                glColor4f(0, 0, 0.8, 1);
-                glBegin(GL_LINES);
-                    glVertex2f(disp_x + 2, HEIGHT*0.95);
-                    glVertex2f(disp_x + 2, HEIGHT*(0.25 + 0.75f*avg_adc_channels[i]/4096));
-                glEnd();
+            //  Actual value
+            glColor4f(1, 1, 1, 1);
+            glBegin(GL_LINES);
+            glVertex2f(disp_x, HEIGHT*0.95);
+            glVertex2f(disp_x, HEIGHT*(0.25 + 0.75f*adc_channels[i]/4096));
+            glEnd();
+            //  Trailing Average value
+            glColor4f(0, 0, 0.8, 1);
+            glBegin(GL_LINES);
+            glVertex2f(disp_x + 2, HEIGHT*0.95);
+            glVertex2f(disp_x + 2, HEIGHT*(0.25 + 0.75f*avg_adc_channels[i]/4096));
+            glEnd();
 
-                sprintf(val, "%d", adc_channels[i]); 
-                drawtext(disp_x-GAP/2, (HEIGHT*0.95)+2, 0.08, 90, 1.0, 0, val, 0, 1, 0);
+            sprintf(val, "%d", adc_channels[i]);
+            drawtext(disp_x-GAP/2, (HEIGHT*0.95)+2, 0.08, 90, 1.0, 0, val, 0, 1, 0);
 
-                disp_x += GAP;
-            }
+            disp_x += GAP;
         }
+    }
 
-        if (stats_on) display_stats(); 
+    if (stats_on) display_stats();
     
     glPopMatrix();
     
@@ -746,14 +586,11 @@ void display(void)
 void key(unsigned char k, int x, int y)
 {
 	//  Process keypresses 
-        
-    last_key = k;
-	
-	if (k == 'q')  ::terminate();
+ 	if (k == 'q')  ::terminate();
 	if (k == '/')  stats_on = !stats_on;		// toggle stats
 	if (k == 'n') 
     {
-        noise_on = !noise_on;			// Toggle noise 
+        noise_on = !noise_on;                   // Toggle noise 
         if (noise_on)
         {
             myHand.setNoise(noise);
@@ -778,6 +615,7 @@ void key(unsigned char k, int x, int y)
     if (k == ' ') reset_sensors();
     if (k == 'a') render_yaw_rate -= 0.25;
     if (k == 'd') render_yaw_rate += 0.25;
+    if (k == 'o') simulate_on = !simulate_on;
     if (k == 'p') 
     {
         // Add to field vector 
@@ -785,7 +623,7 @@ void key(unsigned char k, int x, int y)
         float add[] = {0.001, 0.001, 0.001};
         field_add(add, pos);
     }
-    if (k == 't') {
+    if ((k == 't') && (audio_on)) {
         Audio::writeTone(0, 400, 1.0f, 0.5f);
     }
     if (k == '1')
@@ -827,11 +665,13 @@ void idle(void)
     {
         //  Simulation
         update_pos(1.f/FPS); 
-        update_tris();
-        field_simulate(1.f/FPS);
-        myHead.simulate(1.f/FPS);
-        myHand.simulate(1.f/FPS);
-        // balls.simulate(1.f/FPS);
+        if (simulate_on) {
+            field_simulate(1.f/FPS);
+            myHead.simulate(1.f/FPS);
+            myHand.simulate(1.f/FPS);
+            balls.simulate(1.f/FPS);
+            cloud.simulate(1.f/FPS);
+        }
 
         if (!step_on) glutPostRedisplay();
         last_frame = check;
@@ -881,7 +721,6 @@ void mouseFunc( int button, int state, int x, int y )
 		mouse_x = x;
 		mouse_y = y;
 		mouse_pressed = 1;
-        printf("mdown\n");
     }
 	if( button == GLUT_LEFT_BUTTON && state == GLUT_UP )
     {
@@ -906,27 +745,36 @@ void motionFunc( int x, int y)
 	
 }
 
-//these are functions called by the menus
-void quit(){
+
+//these are functions called by the menus  one function per menu with no arguments passable
+void quit()
+{
     exit(0);
 }
-void delay_none(){
+void delay_none()
+{
     delay=0;
 }
-void delay_50(){
+void delay_50()
+{
     delay=50;
 }
-void delay_100(){
+void delay_100()
+{
     delay=100;
 }
-void delay_200(){
+void delay_200()
+{
     delay=200;
 }
 
 
+
 int main(int argc, char** argv)
 {
-    
+
+
+
     //initialize menu items
     menu_items.init(80, 70);
     menu_items.add_top_item((char*)"FILE");
@@ -939,6 +787,8 @@ int main(int argc, char** argv)
     menu_items.add_menu_item(1, (char*)"200msecs", delay_200);
 
     
+
+
     //  Create network socket and buffer
     UDP_socket = network_init(); 
     if (UDP_socket) printf( "Created UDP socket.\n" ); 
@@ -970,7 +820,7 @@ int main(int argc, char** argv)
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowSize(RIGHT_MARGIN + WIDTH, BOTTOM_MARGIN + HEIGHT);
+    glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Interface");
     
     printf( "Created Display Window.\n" );
@@ -998,3 +848,4 @@ int main(int argc, char** argv)
     
     return EXIT_SUCCESS;
 }   
+
