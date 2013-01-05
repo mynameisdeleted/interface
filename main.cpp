@@ -492,6 +492,7 @@ void display(void)
     glRotatef(render_pitch, 1, 0, 0);
     glRotatef(render_yaw, 0, 1, 0);
     glTranslatef(location[0], location[1], location[2]);
+    
     /* Draw Point Sprites */
     
     load_png_as_texture(texture_filename);
@@ -522,6 +523,7 @@ void display(void)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
     
+        //drawvec3(100, 100, 0.15, 0, 1.0, 0, myHead.getPos(), 0, 1, 0);
     glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic);
     menu_items.draw(mouse_x, mouse_y, mouse_pressed);
     if (mouse_pressed == 1)
@@ -561,14 +563,14 @@ void display(void)
             //  Actual value
             glColor4f(1, 1, 1, 1);
             glBegin(GL_LINES);
-            glVertex2f(disp_x, HEIGHT*0.95);
-            glVertex2f(disp_x, HEIGHT*(0.25 + 0.75f*adc_channels[i]/4096));
+                glVertex2f(disp_x, HEIGHT*0.95);
+                glVertex2f(disp_x, HEIGHT*(0.25 + 0.75f*adc_channels[i]/4096));
             glEnd();
             //  Trailing Average value
             glColor4f(0, 0, 0.8, 1);
             glBegin(GL_LINES);
-            glVertex2f(disp_x + 2, HEIGHT*0.95);
-            glVertex2f(disp_x + 2, HEIGHT*(0.25 + 0.75f*avg_adc_channels[i]/4096));
+                glVertex2f(disp_x + 2, HEIGHT*0.95);
+                glVertex2f(disp_x + 2, HEIGHT*(0.25 + 0.75f*avg_adc_channels[i]/4096));
             glEnd();
 
             sprintf(val, "%d", adc_channels[i]);
