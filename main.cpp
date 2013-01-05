@@ -243,7 +243,7 @@ void init(void)
 
     if (audio_on) {
         Audio::init();
-        printf( "Audio started.\n" );
+        printf("Audio started.\n");
     }
 
     //  Clear serial channels 
@@ -340,11 +340,14 @@ void update_pos(float frametime)
     //  Update avatar head position based on measured gyro rates
     const float HEAD_ROTATION_SCALE = 0.20;
     const float HEAD_LEAN_SCALE = 0.02;
-    if (head_mirror) {
+    if (head_mirror) 
+    {
         myHead.addYaw(measured_yaw_rate * HEAD_ROTATION_SCALE * frametime);
         myHead.addPitch(measured_pitch_rate * -HEAD_ROTATION_SCALE * frametime);
         myHead.addLean(measured_lateral_accel * frametime * HEAD_LEAN_SCALE, measured_fwd_accel*frametime * HEAD_LEAN_SCALE);
-    } else {
+    } 
+    else 
+    {
         myHead.addYaw(measured_yaw_rate * -HEAD_ROTATION_SCALE * frametime);
         myHead.addPitch(measured_pitch_rate * -HEAD_ROTATION_SCALE * frametime);
         myHead.addLean(measured_lateral_accel * frametime * -HEAD_LEAN_SCALE, measured_fwd_accel*frametime * HEAD_LEAN_SCALE);        
@@ -479,7 +482,7 @@ void display(void)
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color);
     GLfloat diffuse_color[] = { 0.5, 0.42, 0.33 };
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color);
-    GLfloat specular_color[] = { 1.0, 1.0, 1.0, 1.0};
+    GLfloat specular_color[] = { 1.0, 1.0, 1.0, 1.0 };
     glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color);
     
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
@@ -493,8 +496,8 @@ void display(void)
     
     load_png_as_texture(texture_filename);
     
-    glDisable( GL_POINT_SPRITE_ARB );
-    glDisable( GL_TEXTURE_2D );
+    glDisable(GL_POINT_SPRITE_ARB);
+    glDisable(GL_TEXTURE_2D);
     if (!display_head) cloud.render();
     //  Show field vectors
     if (display_field) field_render();
@@ -523,7 +526,7 @@ void display(void)
     menu_items.draw(mouse_x, mouse_y, mouse_pressed);
     if (mouse_pressed == 1)
     {
-		if(mouse_x >200){
+        if(mouse_x > 200){
             glPointSize( 10.0f );
             glColor3f(1, 1, 1);
             //glEnable(GL_POINT_SMOOTH);
@@ -533,7 +536,7 @@ void display(void)
             char val[20];
             sprintf(val, "%d,%d", target_x, target_y); 
             drawtext(target_x, target_y-20, 0.08, 0, 1.0, 0, val, 0, 1, 0);
-		}
+        }
     }
     
     if (display_head_mouse && !display_head)
