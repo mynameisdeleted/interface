@@ -243,7 +243,7 @@ void init(void)
 
     if (audio_on) {
         Audio::init();
-        printf( "Audio started.\n" );
+        printf("Audio started.\n");
     }
 
     //  Clear serial channels 
@@ -340,11 +340,14 @@ void update_pos(float frametime)
     //  Update avatar head position based on measured gyro rates
     const float HEAD_ROTATION_SCALE = 0.20;
     const float HEAD_LEAN_SCALE = 0.02;
-    if (head_mirror) {
+    if (head_mirror) 
+    {
         myHead.addYaw(measured_yaw_rate * HEAD_ROTATION_SCALE * frametime);
         myHead.addPitch(measured_pitch_rate * -HEAD_ROTATION_SCALE * frametime);
         myHead.addLean(measured_lateral_accel * frametime * HEAD_LEAN_SCALE, measured_fwd_accel*frametime * HEAD_LEAN_SCALE);
-    } else {
+    } 
+    else 
+    {
         myHead.addYaw(measured_yaw_rate * -HEAD_ROTATION_SCALE * frametime);
         myHead.addPitch(measured_pitch_rate * -HEAD_ROTATION_SCALE * frametime);
         myHead.addLean(measured_lateral_accel * frametime * -HEAD_LEAN_SCALE, measured_fwd_accel*frametime * HEAD_LEAN_SCALE);        
@@ -469,46 +472,46 @@ void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-        glLoadIdentity();
-        glEnable(GL_COLOR_MATERIAL);
-        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-        
-        GLfloat light_position0[] = { 1.0, 1.0, 0.0, 0.0 };
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
-        GLfloat ambient_color[] = { 0.125, 0.305, 0.5 };  
-        glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color);
-        GLfloat diffuse_color[] = { 0.5, 0.42, 0.33 };
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color);
-        GLfloat specular_color[] = { 1.0, 1.0, 1.0, 1.0};
-        glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color);
-        
-        glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
-        glMateriali(GL_FRONT, GL_SHININESS, 96);
-           
-        //  Rotate, translate to camera location 
-        glRotatef(render_pitch, 1, 0, 0);
-        glRotatef(render_yaw, 0, 1, 0);
-        glTranslatef(location[0], location[1], location[2]);
+    glLoadIdentity();
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     
-        /* Draw Point Sprites */
+    GLfloat light_position0[] = { 1.0, 1.0, 0.0, 0.0 };
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
+    GLfloat ambient_color[] = { 0.125, 0.305, 0.5 };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color);
+    GLfloat diffuse_color[] = { 0.5, 0.42, 0.33 };
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color);
+    GLfloat specular_color[] = { 1.0, 1.0, 1.0, 1.0 };
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color);
     
-        load_png_as_texture(texture_filename);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
+    glMateriali(GL_FRONT, GL_SHININESS, 96);
     
-        glDisable( GL_POINT_SPRITE_ARB );
-        glDisable( GL_TEXTURE_2D );
-        if (!display_head) cloud.render();
-        //  Show field vectors
-        if (display_field) field_render();
+    //  Rotate, translate to camera location
+    glRotatef(render_pitch, 1, 0, 0);
+    glRotatef(render_yaw, 0, 1, 0);
+    glTranslatef(location[0], location[1], location[2]);
+    
+    /* Draw Point Sprites */
+    
+    load_png_as_texture(texture_filename);
+    
+    glDisable(GL_POINT_SPRITE_ARB);
+    glDisable(GL_TEXTURE_2D);
+    if (!display_head) cloud.render();
+    //  Show field vectors
+    if (display_field) field_render();
+    
+    if (display_head) myHead.render();
         
-        if (display_head) myHead.render();
-        
-        if (display_hand) myHand.render();   
+    if (display_hand) myHand.render();
      
     
-        if (!display_head) balls.render();
+    if (!display_head) balls.render();
             
-        //  Render the world box 
-        if (!display_head) render_world_box();
+    //  Render the world box
+    if (!display_head) render_world_box();
 
     glPopMatrix();
 
@@ -535,8 +538,9 @@ void display(void)
             char val[20];
             sprintf(val, "%d,%d", target_x, target_y); 
             drawtext(target_x, target_y-20, 0.08, 0, 1.0, 0, val, 0, 1, 0);
-		}
         }
+    }
+    
         if (display_head_mouse && !display_head)
         {
             glPointSize(10.0f);
@@ -747,22 +751,30 @@ void motionFunc( int x, int y)
 }
 
 
-//these are functions called by the menus
-void quit(){
+//these are functions called by the menus  one function per menu with no arguments passable
+void quit()
+{
     exit(0);
 }
-void delay_none(){
+void delay_none()
+{
     delay=0;
 }
-void delay_50(){
+void delay_50()
+{
     delay=50;
 }
-void delay_100(){
+void delay_100()
+{
     delay=100;
 }
-void delay_200(){
+void delay_200()
+{
     delay=200;
 }
+
+
+
 int main(int argc, char** argv)
 {
 
@@ -841,4 +853,5 @@ int main(int argc, char** argv)
     
     return EXIT_SUCCESS;
 }   
+
 
