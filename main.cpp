@@ -50,7 +50,7 @@
 
 #include "cloud.h"
 
-
+//TGAImg Img;
 
 using namespace std;
 
@@ -518,19 +518,19 @@ void display(void)
     //  Render 2D overlay:  I/O level bar graphs and text  
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0, WIDTH, HEIGHT, 0);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_LIGHTING);
-    
+        glLoadIdentity(); 
+        gluOrtho2D(0, WIDTH, HEIGHT, 0);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_LIGHTING);
+
         //drawvec3(100, 100, 0.15, 0, 1.0, 0, myHead.getPos(), 0, 1, 0);
-    glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic);
+        glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
     menu_items.draw(mouse_x, mouse_y, mouse_pressed);
-    if (mouse_pressed == 1)
-    {
-        if(mouse_x > 200){
+        if (mouse_pressed == 1)
+        {
+		if(mouse_x >200){
             glPointSize( 10.0f );
-            glColor3f(1, 1, 1);
+            glColor3f(1,1,1);
             //glEnable(GL_POINT_SMOOTH);
             glBegin(GL_POINTS);
             glVertex2f(target_x, target_y);
@@ -541,46 +541,46 @@ void display(void)
         }
     }
     
-    if (display_head_mouse && !display_head)
-    {
-        glPointSize(10.0f);
-        glColor4f(1.0, 1.0, 0.0, 0.8);
-        glEnable(GL_POINT_SMOOTH);
-        glBegin(GL_POINTS);
-        glVertex2f(head_mouse_x, head_mouse_y);
-        glEnd();
-    }
-        
-    //  Show detected levels from the serial I/O ADC channel sensors
-    if (display_levels)
-    {
-        int i;
-        int disp_x = 10;
-        const int GAP = 16;
-        char val[10];
-        for(i = 0; i < NUM_CHANNELS; i++)
+        if (display_head_mouse && !display_head)
         {
-            //  Actual value
-            glColor4f(1, 1, 1, 1);
-            glBegin(GL_LINES);
-                glVertex2f(disp_x, HEIGHT*0.95);
-                glVertex2f(disp_x, HEIGHT*(0.25 + 0.75f*adc_channels[i]/4096));
+            glPointSize(10.0f);
+            glColor4f(1.0, 1.0, 0.0, 0.8);
+            glEnable(GL_POINT_SMOOTH);
+            glBegin(GL_POINTS);
+            glVertex2f(head_mouse_x, head_mouse_y);
             glEnd();
-            //  Trailing Average value
-            glColor4f(0, 0, 0.8, 1);
-            glBegin(GL_LINES);
-                glVertex2f(disp_x + 2, HEIGHT*0.95);
-                glVertex2f(disp_x + 2, HEIGHT*(0.25 + 0.75f*avg_adc_channels[i]/4096));
-            glEnd();
-
-            sprintf(val, "%d", adc_channels[i]);
-            drawtext(disp_x-GAP/2, (HEIGHT*0.95)+2, 0.08, 90, 1.0, 0, val, 0, 1, 0);
-
-            disp_x += GAP;
         }
-    }
+        
+        //  Show detected levels from the serial I/O ADC channel sensors
+        if (display_levels)
+        {
+            int i;
+            int disp_x = 10;
+            const int GAP = 16;
+            char val[10];
+            for(i = 0; i < NUM_CHANNELS; i++)
+            {
+                //  Actual value 
+                glColor4f(1, 1, 1, 1);
+                glBegin(GL_LINES);
+                    glVertex2f(disp_x, HEIGHT*0.95);
+                    glVertex2f(disp_x, HEIGHT*(0.25 + 0.75f*adc_channels[i]/4096));
+                glEnd();
+                //  Trailing Average value 
+                glColor4f(0, 0, 0.8, 1);
+                glBegin(GL_LINES);
+                    glVertex2f(disp_x + 2, HEIGHT*0.95);
+                    glVertex2f(disp_x + 2, HEIGHT*(0.25 + 0.75f*avg_adc_channels[i]/4096));
+                glEnd();
 
-    if (stats_on) display_stats();
+                sprintf(val, "%d", adc_channels[i]); 
+                drawtext(disp_x-GAP/2, (HEIGHT*0.95)+2, 0.08, 90, 1.0, 0, val, 0, 1, 0);
+
+                disp_x += GAP;
+            }
+        }
+
+        if (stats_on) display_stats(); 
     
     glPopMatrix();
     
@@ -853,4 +853,5 @@ int main(int argc, char** argv)
     
     return EXIT_SUCCESS;
 }   
+
 
