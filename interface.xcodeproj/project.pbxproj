@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+<<<<<<< HEAD
 		1E25180B167935C7007C178A /* marker_acquisition_view.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E251809167935C7007C178A /* marker_acquisition_view.cpp */; };
 		1E2519A2167A7809007C178A /* libopencv_calib3d.2.4.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E251991167A7808007C178A /* libopencv_calib3d.2.4.3.dylib */; };
 		1E2519A3167A7809007C178A /* libopencv_contrib.2.4.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E251992167A7808007C178A /* libopencv_contrib.2.4.3.dylib */; };
@@ -28,6 +29,9 @@
 		1E8B76381677A52100DFA4B5 /* markers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E8B76361677A52100DFA4B5 /* markers.cpp */; };
 		1E8B763F1677D0DE00DFA4B5 /* CVBlob.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E8B763E1677D0DD00DFA4B5 /* CVBlob.framework */; };
 		354B93C4169A441C004E0DA3 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 354B93C2169A441C004E0DA3 /* menu.cpp */; };
+=======
+		35D0AB46165690B000F42250 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35D0AB44165690B000F42250 /* menu.cpp */; };
+>>>>>>> fcc7908e25c043d28ce361921dc5906e585364e4
 		8DD76F650486A84900D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
 		B6BDADD415F4085B002A07DF /* audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6BDADD315F4085B002A07DF /* audio.cpp */; };
 		B6BDADD615F40B04002A07DF /* libportaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B6BDADD515F40B04002A07DF /* libportaudio.a */; };
@@ -78,6 +82,7 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+<<<<<<< HEAD
 		1E251809167935C7007C178A /* marker_acquisition_view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = marker_acquisition_view.cpp; sourceTree = "<group>"; };
 		1E25180A167935C7007C178A /* marker_acquisition_view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = marker_acquisition_view.h; sourceTree = "<group>"; };
 		1E251991167A7808007C178A /* libopencv_calib3d.2.4.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.2.4.3.dylib; path = OpenCV/Libraries/libopencv_calib3d.2.4.3.dylib; sourceTree = "<group>"; };
@@ -236,6 +241,10 @@
 		1E8B763E1677D0DD00DFA4B5 /* CVBlob.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CVBlob.framework; sourceTree = "<group>"; };
 		354B93C2169A441C004E0DA3 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menu.cpp; sourceTree = "<group>"; };
 		354B93C3169A441C004E0DA3 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
+=======
+		35D0AB44165690B000F42250 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menu.cpp; sourceTree = "<group>"; };
+		35D0AB45165690B000F42250 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
+>>>>>>> fcc7908e25c043d28ce361921dc5906e585364e4
 		8DD76F6C0486A84900D96B5E /* interface */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = interface; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6BDADD115F4084F002A07DF /* audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.h; sourceTree = "<group>"; };
 		B6BDADD315F4085B002A07DF /* audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = audio.cpp; sourceTree = "<group>"; };
@@ -318,8 +327,13 @@
 		08FB7794FE84155DC02AAC07 /* test_c_plus */ = {
 			isa = PBXGroup;
 			children = (
+<<<<<<< HEAD
 				1E251990167A77E6007C178A /* Frameworks */,
 				1E8B76391677CE4500DFA4B5 /* Libraries */,
+=======
+				35D0AB44165690B000F42250 /* menu.cpp */,
+				35D0AB45165690B000F42250 /* menu.h */,
+>>>>>>> fcc7908e25c043d28ce361921dc5906e585364e4
 				F6813566164879B5003040E3 /* Resources */,
 				08FB7795FE84155DC02AAC07 /* Source */,
 				C6859E8C029090F304C91782 /* Documentation */,
@@ -828,11 +842,15 @@
 				D4EFE3D0162A2DA000DC5C59 /* hand.cpp in Sources */,
 				F68135561648617D003040E3 /* texture.cpp in Sources */,
 				F681358B1648896D003040E3 /* lodepng.cpp in Sources */,
+<<<<<<< HEAD
 				D409B98A165849180099B0B3 /* cloud.cpp in Sources */,
 				D409B9A8165CA7BC0099B0B3 /* agent.cpp in Sources */,
 				1E8B76381677A52100DFA4B5 /* markers.cpp in Sources */,
 				1E25180B167935C7007C178A /* marker_acquisition_view.cpp in Sources */,
 				354B93C4169A441C004E0DA3 /* menu.cpp in Sources */,
+=======
+				35D0AB46165690B000F42250 /* menu.cpp in Sources */,
+>>>>>>> fcc7908e25c043d28ce361921dc5906e585364e4
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
