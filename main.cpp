@@ -52,7 +52,10 @@
 #include "texture.h"
 #include "cloud.h"
 #include "agent.h"
+#include "menu.h"
 
+
+menu menu_items;
 #include "markers.h"
 #include "marker_acquisition_view.h"
 
@@ -637,9 +640,10 @@ void display(void)
 
         //drawvec3(100, 100, 0.15, 0, 1.0, 0, myHead.getPos(), 0, 1, 0);
         glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, pointer_attenuation_quadratic );
-
+    menu_items.draw(mouse_x, mouse_y, mouse_pressed);
         if (mouse_pressed == 1)
         {
+          if(mouse_x >200){
             glPointSize( 10.0f );
             glColor3f(1,1,1);
             //glEnable(GL_POINT_SMOOTH);
@@ -649,6 +653,7 @@ void display(void)
             char val[20];
             sprintf(val, "%d,%d", target_x, target_y); 
             drawtext(target_x, target_y-20, 0.08, 0, 1.0, 0, val, 0, 1, 0);
+          }
         }
         if (display_head_mouse && !display_head && stats_on)
         {
@@ -947,6 +952,22 @@ void *poll_marker_capture(void *threadarg){
     }
 }
 
+//these are functions called by the menus
+void quit(){
+    exit(0);
+}
+void delay_none(){
+    delay=0;
+}
+void delay_50(){
+    delay=50;
+}
+void delay_100(){
+    delay=100;
+}
+void delay_200(){
+    delay=200;
+}
 int main(int argc, char** argv)
 {
     //  Create network socket and buffer
@@ -954,7 +975,21 @@ int main(int argc, char** argv)
     if (UDP_socket) printf( "Created UDP socket.\n" ); 
     incoming_packet = new char[MAX_PACKET_SIZE];
 
-    //  Test network loopback
+
+
+    //initialize menu items
+    menu_items.init(80, 70);
+    menu_items.add_top_item((char*)"FILE");
+    menu_items.add_top_item((char*)"DELAY");
+    menu_items.add_menu_item(0, (char*)"QUIT", quit);
+    menu_items.add_menu_item(1, (char*)"None", delay_none);
+    menu_items.add_menu_item(1, (char*)"50 msecs", delay_50);
+    menu_items.add_menu_item(1, (char*)"50 msecs", delay_50);
+    menu_items.add_menu_item(1, (char*)"100msecs", delay_100);
+    menu_items.add_menu_item(1, (char*)"200msecs", delay_200);
+
+
+    // Test network loopback
     in_addr from_addr;
     char test_data[] = "Test!";
     int bytes_sent = network_send(UDP_socket, test_data, 5);
