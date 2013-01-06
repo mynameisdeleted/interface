@@ -27,6 +27,7 @@
 		1E2519B2167A7809007C178A /* libopencv_videostab.2.4.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E2519A1167A7809007C178A /* libopencv_videostab.2.4.3.dylib */; };
 		1E8B76381677A52100DFA4B5 /* markers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E8B76361677A52100DFA4B5 /* markers.cpp */; };
 		1E8B763F1677D0DE00DFA4B5 /* CVBlob.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E8B763E1677D0DD00DFA4B5 /* CVBlob.framework */; };
+		354B93C4169A441C004E0DA3 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 354B93C2169A441C004E0DA3 /* menu.cpp */; };
 		8DD76F650486A84900D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
 		B6BDADD415F4085B002A07DF /* audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6BDADD315F4085B002A07DF /* audio.cpp */; };
 		B6BDADD615F40B04002A07DF /* libportaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B6BDADD515F40B04002A07DF /* libportaudio.a */; };
@@ -233,6 +234,8 @@
 		1E8B76361677A52100DFA4B5 /* markers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = markers.cpp; sourceTree = "<group>"; };
 		1E8B76371677A52100DFA4B5 /* markers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = markers.h; sourceTree = "<group>"; };
 		1E8B763E1677D0DD00DFA4B5 /* CVBlob.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CVBlob.framework; sourceTree = "<group>"; };
+		354B93C2169A441C004E0DA3 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menu.cpp; sourceTree = "<group>"; };
+		354B93C3169A441C004E0DA3 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
 		8DD76F6C0486A84900D96B5E /* interface */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = interface; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6BDADD115F4084F002A07DF /* audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.h; sourceTree = "<group>"; };
 		B6BDADD315F4085B002A07DF /* audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = audio.cpp; sourceTree = "<group>"; };
@@ -342,6 +345,8 @@
 				D4B96D4815FF967C00CE6E8B /* head.cpp */,
 				D4EFE3CE162A2D7300DC5C59 /* hand.h */,
 				D4EFE3CF162A2DA000DC5C59 /* hand.cpp */,
+				354B93C2169A441C004E0DA3 /* menu.cpp */,
+				354B93C3169A441C004E0DA3 /* menu.h */,
 				D4EE3BC515EBD93400EE4C89 /* network.cpp */,
 				D4EE3BC415EBD90C00EE4C89 /* network.h */,
 				D4EE3BBA15E45FFE00EE4C89 /* SerialInterface.h */,
@@ -827,6 +832,7 @@
 				D409B9A8165CA7BC0099B0B3 /* agent.cpp in Sources */,
 				1E8B76381677A52100DFA4B5 /* markers.cpp in Sources */,
 				1E25180B167935C7007C178A /* marker_acquisition_view.cpp in Sources */,
+				354B93C4169A441C004E0DA3 /* menu.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
